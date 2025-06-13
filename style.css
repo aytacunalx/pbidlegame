@@ -29,7 +29,7 @@ body {
     min-height: 100vh;
     box-sizing: border-box;
 
-    background-image: url('bg02.png');
+    background-image: url('bg01.png');
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
@@ -39,7 +39,7 @@ body {
    ANA YAPI VE CAM PANELLER
    ============================================== */
 .game-container {
-    max-width: 1300px;
+    max-width: 100%;
     margin: auto;
     display: flex;
     flex-direction: column;
@@ -47,7 +47,16 @@ body {
 }
 
 .game-header,
-.game-section,
+.game-section {
+    background: var(--glass-bg);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    overflow: hidden; /* YENİ EKLENEN SATIR: Taşmayı engeller ve iç scroll'u aktif eder */
+}
 .modal-content {
     background: var(--glass-bg);
     border-radius: 2px;
@@ -89,7 +98,7 @@ h2 {
 
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
 }
 
@@ -97,22 +106,29 @@ h2 {
    KARTLAR VE İÇERİKLERİ
    ============================================== */
 
-/* --- DEĞİŞTİ: Kartları 2'li grid yapısına soktuk --- */
+/* --- DEĞİŞTİ: Kartları yatayda kaydırılabilir hale getirdik --- */
 .card-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Her zaman 2 sütun */
+    display: flex;
+    flex-wrap: nowrap; /* Kartların alt satıra inmesini engeller */
+    overflow-x: auto; /* Yatayda taşan içeriği kaydırılabilir yapar */
     gap: 15px;
     margin-top: 15px;
+    padding-bottom: 15px; /* Kaydırma çubuğu için altta boşluk bırakır */
 }
 
+/* --- DEĞİŞTİ: Kartların yatay düzende sabit genişlikte kalmasını sağladık --- */
 .card {
     background-color: var(--card-bg);
-    border-radius: 2px;
+    border-radius: 12px;
     padding: 15px;
     border: 1px solid transparent;
     transition: transform 0.2s ease-out, border-color 0.2s ease-out;
-    display: flex; /* İçeriğin dikeyde hizalanmasını kolaylaştırmak için */
+    display: flex;
     flex-direction: column;
+
+    /* YENİ EKLENEN KURALLAR */
+    width: 300px;       /* Her kartın sabit genişliği */
+    flex-shrink: 0;     /* Kartların daralmasını engeller */
 }
 
 .card:hover {
@@ -212,3 +228,47 @@ button:disabled {
     padding-left: 2px; /* Hafif iç boşluk */
 }
 
+/* --- Footer Alanı Stilleri --- */
+footer {
+    position: fixed; /* Footer'ı ekranın en altına sabitler */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    
+    /* Projenin genel tasarımıyla uyumlu "Buzlu Cam" efekti */
+    background: rgba(10, 15, 25, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    /* Üst tarafta ince bir ayırıcı çizgi */
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    
+    padding: 15px 0; /* İç boşluk */
+    text-align: center;
+    z-index: 100; /* Diğer elementlerin üzerinde kalmasını sağlar */
+}
+
+footer p {
+    margin: 0;
+    font-size: 14px;
+    color: #fffb00; /* Yumuşak bir gri tonu */
+    letter-spacing: 1px; /* Harf aralığı */
+    text-shadow: 1px 1px 3px #000;
+}
+
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3); /* Hafif koyu bir yol */
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color); /* Temanızın ana rengi */
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover-color);
+}
