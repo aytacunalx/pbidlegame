@@ -1,0 +1,214 @@
+/* ==============================================
+   GENEL VE KÖK DEĞİŞKENLER
+   ============================================== */
+:root {
+    /* Ana Renk Paleti */
+    --text-color: #f0f0f0;
+    --accent-color: #ffc400;
+    --accent-hover-color: #ff4800;
+    --success-color: #2eff7b;
+    --xp-color: #8A2BE2; /* Mor */
+    --error-color: #ff4757;
+
+    /* Cam Panellerin Rengi ve Saydamlığı */
+    --glass-bg: rgba(255, 123, 0, 0);
+    --glass-border: rgba(99, 99, 99, 0.377);
+
+    /* Kartların Rengi ve Saydamlığı */
+    --card-bg: rgba(0, 0, 0, 0.25);
+}
+
+/* ==============================================
+   SAYFA GÖVDESİ VE ARKA PLAN
+   ============================================== */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    background-image: url('bg02.png');
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+}
+
+/* ==============================================
+   ANA YAPI VE CAM PANELLER
+   ============================================== */
+.game-container {
+    max-width: 1300px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.game-header,
+.game-section,
+.modal-content {
+    background: var(--glass-bg);
+    border-radius: 2px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    color: var(--accent-color);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 10px;
+    color: var(--text-color);
+}
+
+.cash-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+#cash-amount {
+    color: var(--success-color);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* ==============================================
+   KARTLAR VE İÇERİKLERİ
+   ============================================== */
+
+/* --- DEĞİŞTİ: Kartları 2'li grid yapısına soktuk --- */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Her zaman 2 sütun */
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 2px;
+    padding: 15px;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease-out, border-color 0.2s ease-out;
+    display: flex; /* İçeriğin dikeyde hizalanmasını kolaylaştırmak için */
+    flex-direction: column;
+}
+
+.card:hover {
+    border-color: var(--accent-color);
+}
+
+.card.locked {
+    filter: saturate(0.2);
+    opacity: 0.7;
+}
+
+.card h4 {
+    margin: 0 0 10px 0;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+/* --- DEĞİŞTİ: Resim kısıtlamaları kaldırıldı --- */
+.card-image {
+    width: 100%;
+    height: auto; /* Yüksekliği otomatik yaparak en-boy oranını korur */
+    object-fit: contain; /* Resmin tamamının görünmesini sağlar */
+    border-radius: 8px;
+    margin-bottom: 10px;
+    max-height: 250px; /* Çok uzun resimler için bir üst limit koymak iyi olabilir */
+}
+
+.slot-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 2px;
+    object-fit: cover;
+    flex-shrink: 0; /* Küçülmesini engelle */
+}
+
+.slot-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* ==============================================
+   BUTONLAR VE ETKİLEŞİMLER
+   ============================================== */
+button {
+    background: linear-gradient(45deg, var(--accent-color), var(--accent-hover-color));
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
+
+button:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+}
+
+button:disabled {
+    background: rgba(100, 100, 100, 0.5);
+    cursor: not-allowed;
+    filter: saturate(0.5);
+}
+
+/* Diğer tüm stiller aynı... */
+.hp-bar-container, .xp-bar-container, .stat-bar{background-color:rgba(0,0,0,0.4);border-radius:1px;height:10px;margin-top:5px;border:none;overflow:hidden}
+.hp-bar-fill{background:linear-gradient(90deg,#ff4757,#ff6b81)}
+.xp-bar-fill{background:linear-gradient(90deg,var(--xp-color),#9932CC)}
+.stat-bar-fill{background:linear-gradient(90deg,#2ecc71,#27ae60)}
+.hp-bar-fill,.xp-bar-fill,.stat-bar-fill{height:100%;border-radius:1px;transition:width .5s ease-in-out}
+.modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:flex;justify-content:center;align-items:center;z-index:1000}
+.modal-backdrop.hidden{display:none}
+.modal-content{width:90%;max-width:500px}
+#modal-maps-list button,#modal-weapons-list button{display:block;width:100%;margin-bottom:10px}
+.recovering-status{color:#f1c40f}
+.reloading-status{color:#ff793f}
+.slot-weapon-icon{width:100%;vertical-align:middle;margin-right:5px}
+
+/* Slot içindeki butonları yan yana hizalar ve aralarına boşluk koyar */
+.slot-actions {
+    display: flex;
+    gap: 10px; /* Butonlar arasındaki yatay boşluk */
+}
+
+/* Can ve Exp bar etiketleri için stil */
+.bar-label {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8); /* Hafif soluk beyaz */
+    margin-top: 8px; /* Üstündeki elemanla arasını açar */
+    margin-bottom: 3px; /* Altındaki bar ile arasını açar */
+    text-align: left; /* Metni sola yaslar */
+    padding-left: 2px; /* Hafif iç boşluk */
+}
+

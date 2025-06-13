@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="ico.png" type="image/x-icon">
+    <title>PB Pinpoint Squad</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <header class="game-header">
+            <img src="logo.png" width="200">
+            <p>Created By GM_Tageslicht</p>
+            <div class="cash-display">
+                <span id="cash-amount">0</span> 💲 Cash
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="game-section">
+                <h2>Paralı Asker Slotları</h2>
+                <div id="mercenary-slots" class="card-container"></div>
+                <button id="unlock-slot-btn">Yeni Slot Aç</button>
+            </section>
+
+            <section class="game-section">
+                <h2>Görev Haritaları</h2>
+                <div id="maps-container" class="card-container"></div>
+            </section>
+
+            <section class="game-section">
+                <h2>Karakter Dükkanı</h2>
+                <div id="character-shop" class="card-container"></div>
+            </section>
+
+            <section class="game-section">
+                <h2>Silah Dükkanı</h2>
+                <div id="weapon-shop" class="card-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="deploy-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3><span id="modal-char-name"></span> için Görev Seç</h3>
+            <div id="modal-maps-list"></div>
+            <button id="modal-deploy-cancel-btn">İptal</button>
+        </div>
+    </div>
+
+    <div id="equip-weapon-modal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3><span id="modal-equip-char-name"></span> için Silah Değiştir</h3>
+            <div id="modal-weapons-list"></div>
+            <button id="modal-equip-cancel-btn">İptal</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
