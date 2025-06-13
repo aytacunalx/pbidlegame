@@ -88,38 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    // --- KAYIT SİSTEMİ FONKSİYONLARI ---
-
-    /**
-    * Mevcut oyun durumunu (gameState) tarayıcının hafızasına kaydeder.
-    */
-    function saveGame() {
-        try {
-            localStorage.setItem('noktaAtisiMangasiSave', JSON.stringify(gameState));
-            console.log("Oyun kaydedildi!"); // Konsolda test için görebilirsiniz
-        } catch (e) {
-            console.error("Kaydetme başarısız:", e);
-        }
-    }
-
-    /**
-    * Kayıtlı oyun durumunu tarayıcının hafızasından yükler.
-    */
-    function loadGame() {
-        const savedData = localStorage.getItem('noktaAtisiMangasiSave');
-        if (savedData) {
-            try {
-                const loadedState = JSON.parse(savedData);
-                // Yeni eklenen özellikleri kaybetmemek için mevcut gameState ile birleştir
-                Object.assign(gameState, loadedState); 
-                console.log("Kayıtlı oyun yüklendi!");
-            } catch(e) {
-                console.error("Yükleme başarısız, kayıtlı veri bozuk olabilir:", e);
-            }
-        } else {
-            console.log("Kayıtlı oyun bulunamadı, yeni oyun başlatılıyor.");
-        }
-    }
+    
 
 
 
@@ -145,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- OYUN MOTORU (GAME LOOP) ---
 
     setInterval(gameTick, 1000);
-    setInterval(saveGame, 5000); // Her 5 saniyede bir oyunu kaydet
+   
 
     function gameTick() {
         let somethingChanged = false;
@@ -430,6 +399,71 @@ function renderSlots() {
             weaponShopEl.appendChild(cardEl);
         }
     }
+
+    // --- KAYIT SİSTEMİ FONKSİYONLARI (GELİŞTİRİLMİŞ) ---
+
+/**
+ * Mevcut oyun durumunu tarayıcının hafızasına kaydeder.
+ */
+function saveGame() {
+    try {
+        localStorage.setItem('noktaAtisiMangasiSave', JSON.stringify(gameState));
+        // console.log("Oyun kaydedildi!"); // Test sırasında konsolu açarak kontrol edebilirsiniz.
+    } catch (e) {
+        console.error("HATA: Oyun kaydedilemedi!", e);
+    }
+}
+
+/**
+ * Kayıtlı oyun durumunu tarayıcının hafızasından yükler.
+ */
+function loadGame() {
+    try {
+        const savedData = localStorage.getItem('noktaAtisiMangasiSave');
+        if (savedData === null || savedData === 'undefined') {
+            console.log("Kayıtlı oyun bulunamadı, yeni oyun başlatılıyor.");
+            return; // Kayıt yoksa işlemi bitir.
+        }
+        
+        const loadedState = JSON.parse(savedData);
+        // ÖNEMLİ: Yeni güncellemelerle eklenebilecek yeni özellikleri kaybetmemek için,
+        // yüklenen veriyi mevcut gameState objesinin üzerine yazıyoruz.
+        Object.assign(gameState, loadedState);
+        console.log("Kayıtlı oyun başarıyla yüklendi!");
+
+    } catch(e) {
+        console.error("HATA: Kayıtlı veri yüklenemedi, muhtemelen bozuk. Oyun sıfırlanıyor.", e);
+        resetGameData(false); // Onay sormadan sıfırla
+    }
+}
+
+/**
+ * Kayıtlı veriyi temizler ve sayfayı yenileyerek oyunu sıfırlar.
+ * @param {boolean} askConfirmation - Kullanıcıya onay sorulup sorulmayacağı.
+ */
+function resetGameData(askConfirmation = true) {
+    const confirmation = askConfirmation
+        ? confirm("Tüm ilerlemenizi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!")
+        : true;
+
+    if (confirmation) {
+        localStorage.removeItem('noktaAtisiMangasiSave');
+        window.location.reload();
+    }
+}
+// --- OYUNU BAŞLATMA ---
+
+function initializeGame() {
+    loadGame();       // 1. Önce kayıtlı veriyi yükle
+    renderAllUI();    // 2. Yüklenmiş verilere göre arayüzü çiz
+    
+    // 3. Oyun döngülerini ve otomatik kaydı başlat
+    setInterval(gameTick, 1000);
+    setInterval(saveGame, 3000); // Kaydetme aralığını 3 saniyeye düşürdüm, daha güvenli.
+}
+
+
+
 
     // --- OYUNCU AKSİYONLARI ---
 
