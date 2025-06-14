@@ -49,7 +49,6 @@ body {
 .game-header,
 .game-section {
     background: var(--glass-bg);
-    border-radius: 2px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -119,7 +118,6 @@ h2 {
 /* --- DEĞİŞTİ: Kartların yatay düzende sabit genişlikte kalmasını sağladık --- */
 .card {
     background-color: var(--card-bg);
-    border-radius: 2px;
     padding: 15px;
     border: 1px solid transparent;
     transition: transform 0.2s ease-out, border-color 0.2s ease-out;
@@ -159,7 +157,6 @@ h2 {
 .slot-avatar {
     width: 100px;
     height: 100px;
-    border-radius: 2px;
     object-fit: cover;
     flex-shrink: 0; /* Küçülmesini engelle */
 }
@@ -231,6 +228,7 @@ button:disabled {
 /* --- Footer Alanı Stilleri --- */
 footer {
     position: fixed; /* Footer'ı ekranın en altına sabitler */
+    margin-top: 40px;
     bottom: 0;
     left: 0;
     width: 100%;
@@ -243,7 +241,7 @@ footer {
     /* Üst tarafta ince bir ayırıcı çizgi */
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     
-    padding: 15px 0; /* İç boşluk */
+    padding: 5px 0; /* İç boşluk */
     text-align: center;
     z-index: 100; /* Diğer elementlerin üzerinde kalmasını sağlar */
 }
@@ -271,4 +269,260 @@ footer p {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-hover-color);
+}
+
+/* Karakter kartı içindeki otomatik görev ayarları için stil */
+.slot-auto-deploy {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+}
+
+.slot-auto-deploy label {
+    cursor: pointer;
+}
+
+.slot-auto-deploy select {
+    background-color: rgba(0,0,0,0.4);
+    color: var(--text-color);
+    border: 1px solid var(--glass-border);
+    border-radius: 5px;
+    padding: 3px;
+}
+
+.slot-auto-deploy select:disabled {
+    opacity: 0.5;
+}
+
+
+/* --- ANA ÜS BÖLÜMÜ YENİ STİLLERİ --- */
+
+#base-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.base-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 10px;
+}
+
+.base-header h3 {
+    margin: 0;
+    color: var(--accent-color);
+    font-size: 1.4em;
+}
+
+.base-header span {
+    font-weight: bold;
+    background: var(--accent-color);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.base-progress-bar-container {
+    width: 100%;
+    height: 12px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+}
+
+.base-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), var(--accent-hover-color));
+    border-radius: 6px;
+    transition: width 0.5s ease-in-out;
+}
+
+.base-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.upgrade-section {
+    margin-top: 10px;
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.next-upgrade-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+#upgrade-base-btn {
+    width: 100%;
+    margin-top: 0;
+}
+
+.max-level-text {
+    text-align: center;
+    font-weight: bold;
+    color: var(--success-color);
+    margin: 0;
+    padding: 10px 0;
+}
+
+
+/* --- OTO. GÖREV ONAY KUTUSU İÇİN YENİ VE DÜZELTİLMİŞ STİLLER --- */
+
+.slot-auto-deploy {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative; /* Konumlandırma için ana kapsayıcı */
+}
+
+/* Tıklanabilir etiketi ve yazıyı düzenleyelim */
+.slot-auto-deploy label {
+    padding-left: 28px; /* Sahte yuvarlak kutu için solda boşluk bırakır */
+    position: relative; /* Pseudo-elementler için referans noktası */
+    line-height: 20px;  /* Dikey hizalamaya yardımcı olur */
+    cursor: pointer;
+}
+
+/* Orijinal çirkin checkbox'ı tamamen sakla */
+.slot-auto-deploy input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+/* Sahte, yuvarlak kutumuzu oluşturalım */
+.slot-auto-deploy label::before {
+    content: '';
+    position: absolute; /* Etikete göre konumlandır */
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    background-color: var(--card-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: 50%; /* YUVARLAK TASARIM */
+    transition: all 0.2s ease;
+}
+
+/* Seçildiğinde görünecek olan tick işaretini oluşturalım */
+.slot-auto-deploy label::after {
+    content: '';
+    position: absolute; /* Bunu da etikete göre konumlandırıyoruz */
+    
+    /* Düzeltilmiş Konum: Yuvarlak kutunun tam ortasına gelecek şekilde */
+    left: 8px; 
+    top: 5px;
+
+    width: 5px;
+    height: 10px;
+    border: solid rgba(255, 0, 0, 0.363);
+    border-width: 0 3px 3px 0;
+    
+    /* Başlangıçta görünmez ve küçük yap */
+    opacity: 0;
+    transform: rotate(45deg) scale(0);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Orijinal checkbox seçildiğinde, sahte kutumuzun stilini değiştir */
+.slot-auto-deploy input[type="checkbox"]:checked + label::before {
+    background-color: var(--accent-color);
+    border-color: var(--accent-hover-color);
+}
+
+/* Orijinal checkbox seçildiğinde, tick işaretini görünür ve normal boyutunda yap */
+.slot-auto-deploy input[type="checkbox"]:checked + label::after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+}
+
+/* Select menüsünü etiketten biraz ayır */
+.slot-auto-deploy select {
+    margin-left: auto;
+}
+
+/* --- BİLDİRİM SİSTEMİ STİLLERİ --- */
+
+#notification-feed {
+    position: fixed; /* Sayfa kaysa bile yerinde kalır */
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    z-index: 2000; /* Her şeyin üzerinde görünür */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-item {
+    padding: 15px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9em;
+    opacity: 0; /* Başlangıçta görünmez */
+    animation: slideInAndOut 5s ease-in-out forwards;
+
+    /* Cam Tasarımı */
+    background: rgba(25, 25, 30, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Farklı bildirim türleri için renkler */
+.notification-item.success {
+    border-left: 5px solid var(--success-color);
+}
+.notification-item.warning {
+    border-left: 5px solid #f1c40f; /* Sarı */
+}
+.notification-item.milestone {
+    border-left: 5px solid var(--xp-color); /* Mor */
+    font-weight: bold;
+}
+.notification-item.info {
+    border-left: 5px solid var(--accent-color); /* Mavi */
+}
+
+
+/* Bildirimin kayarak gelip gitme animasyonu */
+@keyframes slideInAndOut {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    15%, 85% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+#reset-game-link {
+    color: rgba(255, 121, 121, 0.7); /* Tehlikeyi belirten soluk kırmızı */
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s ease-in-out;
+}
+
+#reset-game-link:hover {
+    color: rgba(255, 121, 121, 1); /* Üzerine gelince belirgin kırmızı */
 }
