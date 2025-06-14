@@ -526,3 +526,41 @@ footer p {
 #reset-game-link:hover {
     color: rgba(255, 121, 121, 1); /* Üzerine gelince belirgin kırmızı */
 }
+
+
+/* --- OYUNCU ADI SİSTEMİ STİLLERİ --- */
+
+/* Header'daki oyuncu bilgisi alanı */
+.player-info {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#player-nickname-display {
+    color: var(--accent-color);
+}
+
+/* Başlangıç penceresindeki input alanı */
+#nickname-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: 2px solid var(--glass-border);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1em;
+    box-sizing: border-box; /* Padding'in genişliği etkilememesi için */
+}
+
+#nickname-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Başlangıç penceresindeki buton */
+#start-game-btn {
+    width: 100%;
+    margin-top: 0;
+}
