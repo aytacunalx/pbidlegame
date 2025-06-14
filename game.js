@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- OYUN DURUMU (STATE) ---
     let gameState = {
         playerName: null, playerAvatarId: 'assets/avatar1.png',
-        cash: 300000, baseLevel: 1,
+        cash: 3000, baseLevel: 1,
         unlockedMaps: ['map1'], unlockedWeapons: ['k1'], unlockedUpgrades: [], 
         healingSpeedMultiplier: 1, autoDeployUnlocked: false,
         totalKills: 0, totalXp: 0, totalCashEarned: 0, timePlayedInSeconds: 0,
