@@ -19,7 +19,10 @@
 
         <main class="main-content">
             <section class="game-section">
-                <h2>Paralı Asker Slotları</h2>
+                <h2>Paralı Askerler</h2>
+                <div class="player-info">
+                    Komutan: <span id="player-nickname-display">İsimsiz</span>
+                </div>
                 <div id="mercenary-slots" class="card-container">
 
                     </div>
@@ -77,6 +80,15 @@
     <script src="game.js"></script>
 
     <div id="notification-feed"></div>
+
+
+    <div id="welcome-modal" class="modal-backdrop"> <div class="modal-content">
+        <h2>Pinpoint Sqaud'a Hoş Geldin!</h2>
+        <p>Lütfen bir komutan adı girerek başla:</p>
+        <input type="text" id="nickname-input" placeholder="Komutan Adı" maxlength="15" autocomplete="off">
+        <button id="start-game-btn">Oyuna Başla</button>
+    </div>
+</div>
 
 </body>
 </html>
