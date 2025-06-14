@@ -564,3 +564,58 @@ footer p {
     width: 100%;
     margin-top: 0;
 }
+
+/* --- YENİ EKLENEN ÖZELLİKLER İÇİN STİLLER --- */
+
+/* Header'daki Oyuncu Avatarı */
+#player-avatar-display {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* Başlangıç Ekranındaki Avatar Seçenekleri */
+#avatar-selection {
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.avatar-choice {
+    width: 100px;
+    height: 100px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.avatar-choice:hover {
+    border-color: var(--accent-hover-color);
+}
+.avatar-choice.selected {
+    border-color: var(--success-color);
+    box-shadow: 0 0 10px var(--success-color);
+}
+
+/* İstatistik Paneli Stilleri */
+#stats-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.stat-item {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.stat-label {
+    display: block;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+.stat-value {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--success-color);
+}
