@@ -108,12 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
     { level: 11, name: "Gölge Operasyonları Direktörlüğü", cost: 250000000000, slotsGained: 3 },
     ];
 
-     // --- OYUN DURUMU (STATE) ---
+    // --- OYUN DURUMU (STATE) ---
     let gameState = {
-        playerName: null,
+        playerName: null, playerAvatarId: 'assets/avatar1.png',
         cash: 3000, baseLevel: 1,
         unlockedMaps: ['map1'], unlockedWeapons: ['k1'], unlockedUpgrades: [], 
         healingSpeedMultiplier: 1, autoDeployUnlocked: false,
+        totalKills: 0, totalXp: 0, totalCashEarned: 0, timePlayedInSeconds: 0,
         slots: [
             { characterId: null, level: 1, xp: 0, currentHp: 100, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: 30, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' },
             { characterId: null, level: 1, xp: 0, currentHp: 100, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: 30, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' },
@@ -122,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- DOM ELEMENTLERİ ---
-    const resetLink = document.getElementById('reset-game-link');
     const cashAmountEl = document.getElementById('cash-amount');
     const mercenarySlotsEl = document.getElementById('mercenary-slots');
     const mapsContainerEl = document.getElementById('maps-container');
@@ -140,33 +140,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalWeaponsList = document.getElementById('modal-weapons-list');
     const modalEquipCancelBtn = document.getElementById('modal-equip-cancel-btn');
     let selectedSlotForEquip = null;
+    const resetLink = document.getElementById('reset-game-link');
 
     // --- KAYIT SİSTEMİ FONKSİYONLARI ---
     function saveGame() { try { localStorage.setItem('noktaAtisiMangasiSave', JSON.stringify(gameState)); } catch (e) { console.error("HATA: Oyun kaydedilemedi!", e); } }
     function loadGame() { try { const savedData = localStorage.getItem('noktaAtisiMangasiSave'); if (savedData === null || savedData === 'undefined') return; const loadedState = JSON.parse(savedData); Object.assign(gameState, loadedState); console.log("Kayıtlı oyun başarıyla yüklendi!"); } catch(e) { console.error("HATA: Kayıtlı veri yüklenemedi, muhtemelen bozuk.", e); } }
+    function resetGameData(askConfirmation = true) { const confirmation = askConfirmation ? confirm("TÜM İLERLEMENİZ KALICI OLARAK SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?") : true; if (confirmation) { localStorage.removeItem('noktaAtisiMangasiSave'); window.location.reload(); } }
     
     // --- YARDIMCI FONKSİYONLAR ---
-    /**
- * Oyuncu adı ayarlandıktan sonra oyunu başlatır.
- * @param {string} nickname - Oyuncunun girdiği isim.
- */
-function startGame(nickname) {
-    // 1. Oyuncu adını ve arayüzü güncelle
-    gameState.playerName = nickname;
-    document.getElementById('player-nickname-display').textContent = nickname;
-
-    // 2. Başlangıç ekranını gizle
-    document.getElementById('welcome-modal').classList.add('hidden');
-
-    // 3. Oyunun ana döngülerini ve kaydı başlat
-    renderAllUI();
-    setInterval(gameTick, 1000);
-    setInterval(saveGame, 3000);
-}
-
     function getRankName(level) { return RANKS[level] || `Seviye ${level}`; }
     function createStatBarHTML(label, value, max = 20) { const percentage = (value / max) * 100; return `<div title="${label}: ${value}" style="font-size: 0.8em; margin-top:5px; text-align: left;">${label}<div class="stat-bar"><div class="stat-bar-fill" style="width: ${percentage}%;"></div></div></div>`; }
     function showNotification(message, type = 'info') { const feed = document.getElementById('notification-feed'); if (!feed) return; const notification = document.createElement('div'); notification.className = `notification-item ${type}`; notification.textContent = message; feed.insertBefore(notification, feed.firstChild); setTimeout(() => { notification.remove(); }, 5000); }
+    function formatTime(totalSeconds) { const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0'); const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0'); const seconds = (totalSeconds % 60).toString().padStart(2, '0'); return `${hours}:${minutes}:${seconds}`; }
 
     // --- ARAYÜZ GÜNCELLEME FONKSİYONLARI ---
     function updateDynamicElements() {
@@ -177,6 +162,7 @@ function startGame(nickname) {
         renderWeaponShop();
         renderUpgradeShop();
         renderBaseInfo();
+        renderStatistics();
     }
     function renderAllUI() { updateDynamicElements(); }
 
@@ -193,10 +179,7 @@ function startGame(nickname) {
                 const rankName = getRankName(slot.level);
                 let statusText;
                 if (slot.isRecovering) { statusText = `<span class="recovering-status">İyileşiyor...</span>`; }
-                else if (slot.onMission) {
-                    statusText = `${MAPS[slot.mapId].name} haritasında.`;
-                    if (slot.isReloading) { statusText += ` <span class="reloading-status">(Dolduruyor)</span>`; }
-                }
+                else if (slot.onMission) { statusText = `${MAPS[slot.mapId].name} haritasında.`; if (slot.isReloading) { statusText += ``; } }
                 else { statusText = 'Boşta Bekliyor'; }
                 const maxHp = currentLevelData.stats.maxHp;
                 const hpPercentage = (slot.currentHp / maxHp) * 100;
@@ -273,7 +256,7 @@ function startGame(nickname) {
         const currentBase = BASE_UPGRADES[currentLevel - 1];
         const nextUpgrade = BASE_UPGRADES[currentLevel];
         const maxLevels = BASE_UPGRADES.length;
-        const progressPercentage = ((currentLevel -1) / (maxLevels -1)) * 100;
+        const progressPercentage = ((currentLevel) / (maxLevels)) * 100;
         let upgradeHTML = '';
         if (nextUpgrade) {
             upgradeHTML = `<div class="next-upgrade-info"><span>Sonraki Seviye: <strong>${nextUpgrade.name}</strong></span><span>+${nextUpgrade.slotsGained} Slot</span></div><button id="upgrade-base-btn" ${gameState.cash < nextUpgrade.cost ? 'disabled' : ''}>Yükselt (${nextUpgrade.cost.toLocaleString()} Cash)</button>`;
@@ -282,19 +265,23 @@ function startGame(nickname) {
         }
         baseInfoContainer.innerHTML = `<div class="base-header"><h3>${currentBase.name}</h3><span>Seviye ${currentLevel}</span></div><div class="base-progress-bar-container"><div class="base-progress-bar-fill" style="width: ${progressPercentage}%;"></div></div><div class="base-stats"><span>Mevcut Kapasite: <strong>${gameState.slots.length}</strong></span><span>Maks. Seviye: <strong>${maxLevels}</strong></span></div><div class="upgrade-section">${upgradeHTML}</div>`;
     }
+    
+    function renderStatistics() {
+        document.getElementById('stats-total-kills').textContent = Math.floor(gameState.totalKills).toLocaleString();
+        document.getElementById('stats-total-xp').textContent = Math.floor(gameState.totalXp).toLocaleString();
+        document.getElementById('stats-total-cash').textContent = Math.floor(gameState.totalCashEarned).toLocaleString();
+        document.getElementById('stats-time-played').textContent = formatTime(gameState.timePlayedInSeconds);
+    }
 
     function renderMaps(){mapsContainerEl.innerHTML='';for(const mapId in MAPS){const map=MAPS[mapId];const mapEl=document.createElement('div');mapEl.classList.add('card');const isUnlocked=gameState.unlockedMaps.includes(mapId);if(!isUnlocked){mapEl.classList.add('locked')}mapEl.innerHTML=`<img src="${map.image}" alt="${map.name}" class="card-image"><h4>${map.name}</h4><p>Ödül: ${map.baseCashPerKill} Cash/Kill | XP: ${map.baseXpPerKill} XP/Kill</p>`;if(!isUnlocked){const unlockBtn=document.createElement('button');unlockBtn.textContent=`Aç (${map.unlockCost.toLocaleString()} Cash)`;unlockBtn.disabled=gameState.cash<map.unlockCost;unlockBtn.onclick=()=>unlockMap(mapId);mapEl.appendChild(unlockBtn)}mapsContainerEl.appendChild(mapEl)}}
-    
     function renderShop(){characterShopEl.innerHTML='';for(const charId in CHARACTERS){const char=CHARACTERS[charId];const level1Data=char.levels[0];const charEl=document.createElement('div');charEl.classList.add('card');charEl.innerHTML=`<img src="${level1Data.image.full}" alt="${char.name}" class="card-image"><h4>${char.name}</h4><div class="stats" style="padding:0 10px">${createStatBarHTML('Hasar Bonusu',level1Data.stats.damage)}${createStatBarHTML('Max Can',level1Data.stats.maxHp,200)}${createStatBarHTML('Savunma',level1Data.stats.defense,50)}</div><p>Fiyat: ${char.cost.toLocaleString()} Cash</p>`;const buyBtn=document.createElement('button');buyBtn.textContent='Satın Al';buyBtn.disabled=gameState.cash<char.cost;buyBtn.onclick=()=>buyCharacter(charId);charEl.appendChild(buyBtn);characterShopEl.appendChild(charEl)}}
-
     function renderWeaponShop(){weaponShopEl.innerHTML='';for(const weaponId in WEAPONS){if(weaponId==='k1')continue;const weapon=WEAPONS[weaponId];const cardEl=document.createElement('div');cardEl.className='card';cardEl.innerHTML=`<img src="${weapon.image}" alt="${weapon.name}" class="card-image"><h4>${weapon.name}</h4><div class="stats" style="padding:0 10px;font-size:.9em;text-align:left"><p><strong>Hasar:</strong> ${weapon.stats.damage}</p><p><strong>Atış Hızı:</strong> ${weapon.stats.fireRate}/s</p><p><strong>Şarjör:</strong> ${weapon.stats.magazine}</p><p><strong>Verim:</strong> ${weapon.stats.bulletsPerKill} mermi/kill</p></div><p>Fiyat: ${weapon.cost.toLocaleString()} Cash</p>`;const buyBtn=document.createElement('button');const isOwned=gameState.unlockedWeapons.includes(weaponId);if(isOwned){buyBtn.textContent='Satın Alındı';buyBtn.disabled=true}else{buyBtn.textContent='Satın Al';buyBtn.disabled=gameState.cash<weapon.cost;buyBtn.onclick=()=>buyWeapon(weaponId)}cardEl.appendChild(buyBtn);weaponShopEl.appendChild(cardEl)}}
-    
     function renderUpgradeShop(){if(!upgradeShopEl)return;upgradeShopEl.innerHTML='';for(const upgradeId in UPGRADES){const upgrade=UPGRADES[upgradeId];const cardEl=document.createElement('div');cardEl.className='card';cardEl.innerHTML=`<h4>${upgrade.name}</h4><p style="flex-grow:1">${upgrade.description}</p><p>Fiyat: ${upgrade.cost.toLocaleString()} Cash</p>`;const buyBtn=document.createElement('button');const isOwned=gameState.unlockedUpgrades.includes(upgradeId);if(isOwned){buyBtn.textContent='Satın Alındı';buyBtn.disabled=true}else{buyBtn.textContent='Satın Al';buyBtn.disabled=gameState.cash<upgrade.cost;buyBtn.onclick=()=>buyUpgrade(upgradeId)}cardEl.appendChild(buyBtn);upgradeShopEl.appendChild(cardEl)}}
 
     // --- OYUNCU AKSİYONLARI ---
-    function upgradeBase(){const currentLevel=gameState.baseLevel;if(currentLevel-1>=BASE_UPGRADES.length)return;const nextUpgrade=BASE_UPGRADES[currentLevel];if(gameState.cash>=nextUpgrade.cost){gameState.cash-=nextUpgrade.cost;gameState.baseLevel++;for(let i=0;i<nextUpgrade.slotsGained;i++){gameState.slots.push({characterId:null,level:1,xp:0,currentHp:100,isRecovering:false,onMission:false,mapId:null,weaponId:'k1',bulletsInMagazine:WEAPONS['k1'].stats.magazine,isReloading:false,autoDeployEnabled:false,autoDeployMapId:'map1'})}showNotification(`${nextUpgrade.name} seviyesine yükseltildi!`, 'milestone');renderAllUI()}else{alert("Yeterli paran yok!")}}
+    function upgradeBase(){const currentLevel=gameState.baseLevel;if(currentLevel>=BASE_UPGRADES.length)return;const nextUpgrade=BASE_UPGRADES[currentLevel];if(gameState.cash>=nextUpgrade.cost){gameState.cash-=nextUpgrade.cost;gameState.baseLevel++;for(let i=0;i<nextUpgrade.slotsGained;i++){gameState.slots.push({characterId:null,level:1,xp:0,currentHp:100,isRecovering:false,onMission:false,mapId:null,weaponId:'k1',bulletsInMagazine:WEAPONS['k1'].stats.magazine,isReloading:false,autoDeployEnabled:false,autoDeployMapId:'map1'})}showNotification(`${nextUpgrade.name} seviyesine yükseltildi!`, 'milestone');renderAllUI()}else{alert("Yeterli paran yok!")}}
     function dismissMerc(slotIndex) { const slot = gameState.slots[slotIndex]; if (!slot.characterId) return; if (slot.onMission) { alert("Karakter görevdeyken kovulamaz! Önce üsse geri çağırmalısınız."); return; } if (confirm(`Bu karakteri kovmak istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) { gameState.slots.splice(slotIndex, 1); showNotification(`Bir asker kovuldu.`, 'warning'); renderAllUI(); } }
-    function buyCharacter(charId) { const character = CHARACTERS[charId]; const emptySlotIndex = gameState.slots.findIndex(slot => slot.characterId === null); if (emptySlotIndex !== -1 && gameState.cash >= character.cost) { gameState.cash -= character.cost; const maxHp = character.levels[0].stats.maxHp; gameState.slots[emptySlotIndex] = { characterId: charId, level: 1, xp: 0, currentHp: maxHp, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: WEAPONS['k1'].stats.magazine, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' }; showNotification(`${character.name} ekibe katıldı!`, 'success'); renderAllUI(); } else { alert("Tüm slotların dolu! Yeni slot için üssünü yükselt."); } }
+    function buyCharacter(charId) { const character = CHARACTERS[charId]; const currentSlots = gameState.slots.filter(s => s.characterId !== null).length; const maxSlots = gameState.slots.length; if(currentSlots >= maxSlots){alert("Tüm slotların dolu! Yeni slot için üssünü yükselt.");return;} const emptySlotIndex = gameState.slots.findIndex(slot => slot.characterId === null); if (emptySlotIndex !== -1 && gameState.cash >= character.cost) { gameState.cash -= character.cost; const maxHp = character.levels[0].stats.maxHp; gameState.slots[emptySlotIndex] = { characterId: charId, level: 1, xp: 0, currentHp: maxHp, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: WEAPONS['k1'].stats.magazine, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' }; showNotification(`${character.name} ekibe katıldı!`, 'success'); renderAllUI(); } else { alert("Boş slot bulunamadı, bu bir hata olabilir."); } }
     function buyWeapon(weaponId) { const weapon = WEAPONS[weaponId]; if (!gameState.unlockedWeapons.includes(weaponId) && gameState.cash >= weapon.cost) { gameState.cash -= weapon.cost; gameState.unlockedWeapons.push(weaponId); showNotification(`${weapon.name} silahı envantere eklendi!`, 'success'); renderAllUI(); } }
     function unlockMap(mapId) { const map = MAPS[mapId]; if (!gameState.unlockedMaps.includes(mapId) && gameState.cash >= map.unlockCost) { gameState.cash -= map.unlockCost; gameState.unlockedMaps.push(mapId); showNotification(`Yeni görev bölgesi açıldı: ${map.name}`, 'success'); renderAllUI(); } }
     function recallMerc(slotIndex) { gameState.slots[slotIndex].onMission = false; gameState.slots[slotIndex].mapId = null; updateDynamicElements(); }
@@ -304,14 +291,13 @@ function startGame(nickname) {
 
     // --- OYUN DÖNGÜSÜ ---
     function gameTick() {
-        let somethingChanged = false;
+        let somethingChanged = true; 
+        gameState.timePlayedInSeconds++;
         gameState.slots.forEach((slot, index) => {
             if (!slot.characterId) { return; }
             const baseChar = CHARACTERS[slot.characterId];
             const maxHp = baseChar.levels[slot.level - 1].stats.maxHp;
-
             if (slot.isRecovering) {
-                somethingChanged = true;
                 slot.currentHp += (maxHp * 0.05) * gameState.healingSpeedMultiplier;
                 if (slot.currentHp >= maxHp) {
                     slot.currentHp = maxHp;
@@ -323,37 +309,26 @@ function startGame(nickname) {
                 }
                 return;
             }
-            
             if (slot.onMission) {
-                somethingChanged = true;
                 const map = MAPS[slot.mapId];
                 const charStats = baseChar.levels[slot.level - 1].stats;
-                
                 const damageReduction = 1 - (charStats.defense / 100);
                 const damageTaken = map.damagePerSecond * damageReduction;
                 slot.currentHp -= damageTaken;
                 if (slot.currentHp <= 0) { slot.currentHp = 0; showNotification(`${baseChar.name} ağır yaralandı ve üsse geri döndü!`, 'warning'); recallMerc(index); slot.isRecovering = true; return; }
-
-                if (slot.isReloading) {
-                    const weapon = WEAPONS[slot.weaponId];
-                    slot.bulletsInMagazine = weapon.stats.magazine;
-                    slot.isReloading = false;
-                    return;
-                }
-                
+                if (slot.isReloading) { const weapon = WEAPONS[slot.weaponId]; slot.bulletsInMagazine = weapon.stats.magazine; slot.isReloading = false; return; }
                 const weapon = WEAPONS[slot.weaponId];
                 let shotsFiredThisTick = weapon.stats.fireRate;
-                if (slot.bulletsInMagazine < shotsFiredThisTick) {
-                    shotsFiredThisTick = slot.bulletsInMagazine;
-                    slot.isReloading = true;
-                }
+                if (slot.bulletsInMagazine < shotsFiredThisTick) { shotsFiredThisTick = slot.bulletsInMagazine; slot.isReloading = true; }
                 slot.bulletsInMagazine -= shotsFiredThisTick;
-                
                 const killsThisTick = shotsFiredThisTick / weapon.stats.bulletsPerKill;
                 const totalDamage = charStats.damage + weapon.stats.damage;
                 const cashGained = killsThisTick * totalDamage * map.baseCashPerKill;
                 const xpGained = killsThisTick * totalDamage * map.baseXpPerKill;
                 gameState.cash += cashGained;
+                gameState.totalCashEarned += cashGained;
+                gameState.totalXp += xpGained;
+                gameState.totalKills += killsThisTick;
                 slot.xp += xpGained;
                 checkForLevelUp(index);
             }
@@ -370,46 +345,55 @@ function startGame(nickname) {
     modalDeployCancelBtn.addEventListener('click', closeDeployModal);
     modalEquipCancelBtn.addEventListener('click', closeEquipModal);
     baseInfoContainer.addEventListener('click', (event) => { if (event.target && event.target.id === 'upgrade-base-btn') { upgradeBase(); } });
-    if (resetLink) {
-    resetLink.addEventListener('click', () => resetGameData(true));
-    }
-    /**
- * Kayıtlı veriyi temizler ve sayfayı yenileyerek oyunu sıfırlar.
- * @param {boolean} askConfirmation - Kullanıcıya onay sorulup sorulmayacağı.
- */
-function resetGameData(askConfirmation = true) {
-    const confirmation = askConfirmation
-        ? confirm("TÜM İLERLEMENİZ KALICI OLARAK SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?")
-        : true;
+    if(resetLink){resetLink.addEventListener('click',()=>resetGameData(true))};
 
-    if (confirmation) {
-        localStorage.removeItem('noktaAtisiMangasiSave');
-        window.location.reload();
-    }
-}
-const startGameBtn = document.getElementById('start-game-btn');
-const nicknameInput = document.getElementById('nickname-input');
-
-if (startGameBtn) {
-    startGameBtn.addEventListener('click', () => {
-        const nickname = nicknameInput.value.trim();
-        if (nickname.length > 0) {
-            startGame(nickname);
-        } else {
-            alert("Lütfen geçerli bir oyuncu adı girin.");
-        }
-    });
-}
+    // --- BAŞLANGIÇ EKRANI MANTIĞI ---
+    const welcomeModal = document.getElementById('welcome-modal');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const nicknameInput = document.getElementById('nickname-input');
+    const avatarContainer = document.getElementById('avatar-selection');
     
-    // --- OYUNU BAŞLATMA ---
-    function initializeGame() {
-    loadGame(); // Kayıtlı veriyi yükle
+    function setupWelcomeScreenListeners() {
+        if (!startGameBtn || !avatarContainer) return;
+        
+        avatarContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('avatar-choice')) {
+                avatarContainer.querySelector('.selected').classList.remove('selected');
+                e.target.classList.add('selected');
+            }
+        });
 
-    if (gameState.playerName) {
-        // Eğer oyuncunun zaten bir adı varsa, oyunu direkt başlat
-        startGame(gameState.playerName);
+        startGameBtn.addEventListener('click', () => {
+            const nickname = nicknameInput.value.trim();
+            const selectedAvatarEl = avatarContainer.querySelector('.avatar-choice.selected');
+            if (nickname.length > 0 && selectedAvatarEl) {
+                const avatarSrc = selectedAvatarEl.dataset.avatar;
+                startGame(nickname, avatarSrc);
+            } else {
+                alert("Lütfen bir oyuncu adı girin ve bir avatar seçin.");
+            }
+        });
     }
-    // Eğer adı yoksa, hiçbir şey yapma. Başlangıç ekranı görünür kalacak.
-}
+
+    // --- OYUNU BAŞLATMA ---
+    function startGame(nickname, avatarId) {
+        gameState.playerName = nickname;
+        gameState.playerAvatarId = avatarId;
+        document.getElementById('player-nickname-display').textContent = nickname;
+        document.getElementById('player-avatar-display').src = avatarId;
+        document.getElementById('welcome-modal').classList.add('hidden');
+        renderAllUI();
+        setInterval(gameTick, 1000);
+        setInterval(saveGame, 3000);
+    }
+    function initializeGame() {
+        loadGame();
+        if (gameState.playerName) {
+            startGame(gameState.playerName, gameState.playerAvatarId);
+        } else {
+            setupWelcomeScreenListeners();
+        }
+    }
+    
     initializeGame();
 });
