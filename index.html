@@ -11,28 +11,37 @@
 
     <div class="game-container">
         <header class="game-header">
-            <img src="logo.png" width="100">
+            <img src="logo.png" width="75">
+            <div class="player-info">
+                <img id="player-avatar-display" src="assets/avatar1.png" alt="Player Avatar">
+                <span id="player-nickname-display">İsimsiz</span>
+            </div>
             <div class="cash-display">
-                <span id="cash-amount">0</span> 💲 Cash
+                <span id="cash-amount">0</span> Cash
             </div>
         </header>
 
         <main class="main-content">
             <section class="game-section">
-                <h2>Paralı Askerler</h2>
-                <div class="player-info">
-                    Komutan: <span id="player-nickname-display">İsimsiz</span>
-                </div>
-                <div id="mercenary-slots" class="card-container">
-
-                    </div>
-                
+                <h2>Paralı Asker Slotları</h2>
+                <div id="mercenary-slots" class="card-container"></div>
             </section>
+
             <section class="game-section">
-                    <h2>Ana Üs</h2>
-                    <div id="base-info-container">
-                        </div>
-                </section>
+                <h2>Ana Üs</h2>
+                <div id="base-info-container"></div>
+                &nbsp;
+                <h2>Genel İstatistikler</h2>
+                <div id="stats-container">
+                    <div class="stat-item"><span class="stat-label">Toplam Kill Sayısı</span><span id="stats-total-kills" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">Toplam Tecrübe Puanı</span><span id="stats-total-xp" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">Toplam Kazanılan Para</span><span id="stats-total-cash" class="stat-value">0</span></div>
+                    <div class="stat-item"><span class="stat-label">Toplam Oynanma Süresi</span><span id="stats-time-played" class="stat-value">00:00:00</span></div>
+                </div>
+            </section>
+
+            
+            
 
             <section class="game-section">
                 <h2>Görev Haritaları</h2>
@@ -72,6 +81,20 @@
         </div>
     </div>
 
+    <div id="welcome-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2>Pinpoint Squad'a Hoş Geldin!</h2>
+            <p>Squad'ın için bir lider seç ve adını belirle:</p>
+            <div id="avatar-selection" class="card-container" style="padding-bottom: 0; justify-content: center;">
+                <img src="assets/avatar1.png" class="avatar-choice selected" data-avatar="assets/avatar1.png">
+                <img src="assets/avatar2.png" class="avatar-choice" data-avatar="assets/avatar2.png">
+                <img src="assets/avatar3.png" class="avatar-choice" data-avatar="assets/avatar3.png">
+            </div>
+            <input type="text" id="nickname-input" placeholder="Lider Adı" maxlength="15" autocomplete="off">
+            <button id="start-game-btn">Oyuna Başla</button>
+        </div>
+    </div>
+
      <footer>
         <p>Created by GM_Tageslicht <span id="reset-game-link">Oyunu Sıfırla</span></p>
         
@@ -82,12 +105,6 @@
     <div id="notification-feed"></div>
 
 
-    <div id="welcome-modal" class="modal-backdrop"> <div class="modal-content">
-        <h2>Pinpoint Sqaud'a Hoş Geldin!</h2>
-        <p>Lütfen bir komutan adı girerek başla:</p>
-        <input type="text" id="nickname-input" placeholder="Komutan Adı" maxlength="15" autocomplete="off">
-        <button id="start-game-btn">Oyuna Başla</button>
-    </div>
 </div>
 
 </body>
