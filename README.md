@@ -19,3 +19,31 @@ Her türlü öneri, geri bildirim veya hata bildirimi için açığım!
 ---
 
 Teşekkürler ve iyi oyunlar! 🚀
+
+
+
+
+# 🎮 A Boredom-Fueled Game Project
+
+Hey there! This game was born purely out of **boredom**.  
+I’ve been shaping it over time with random ideas that pop into my head — adding, changing, and sometimes breaking things along the way.
+
+🚧 It’s still a work in progress.  
+🔁 Things may change frequently as I update it with new ideas.  
+🎯 My goal isn’t to make a perfect game, just to have fun, experiment, and improve.
+
+---
+
+## 💡 Got an Idea?
+
+If you’d like to help out, report a bug, or just share your thoughts:
+
+📬 You can reach me at **nf.aytacunal@gmail.com** — I’d love to hear from you!
+
+---
+
+❗ **Note:**  
+Unfortunately, the game doesn’t currently support English.  
+But who knows, I might add it in the future if I don’t forget. 😅
+
+Thanks for checking it out, and have fun! 🚀
