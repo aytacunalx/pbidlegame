@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- OYUN DURUMU (STATE) ---
     let gameState = {
         playerName: null, playerAvatarId: 'assets/avatar1.png',
-        cash: 3000, baseLevel: 1,
+        cash: 300000, baseLevel: 1,
         unlockedMaps: ['map1'], unlockedWeapons: ['k1'], unlockedUpgrades: [], 
         healingSpeedMultiplier: 1, autoDeployUnlocked: false,
         totalKills: 0, totalXp: 0, totalCashEarned: 0, timePlayedInSeconds: 0,
@@ -148,6 +148,62 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGameData(askConfirmation = true) { const confirmation = askConfirmation ? confirm("TÜM İLERLEMENİZ KALICI OLARAK SİLİNECEK! Bu işlem geri alınamaz. Emin misiniz?") : true; if (confirmation) { localStorage.removeItem('noktaAtisiMangasiSave'); window.location.reload(); } }
     
     // --- YARDIMCI FONKSİYONLAR ---
+    /**
+ * Ekranda şık bir uyarı penceresi gösterir.
+ * @param {string} title - Pencerenin başlığı.
+ * @param {string} message - Gösterilecek mesaj.
+ */
+function showAlert(title, message) {
+    const alertModal = document.getElementById('alert-modal');
+    document.getElementById('alert-title').textContent = title;
+    document.getElementById('alert-text').textContent = message;
+    alertModal.classList.remove('hidden');
+
+    // "Tamam" butonuna sadece bir kere basılabilmesi için olay dinleyiciyi yeniden ata
+    document.getElementById('alert-ok-btn').onclick = () => {
+        alertModal.classList.add('hidden');
+    };
+}
+
+/**
+ * Ekranda şık bir onay penceresi gösterir ve kullanıcının seçimini bekler.
+ * @param {string} title - Pencerenin başlığı.
+ * @param {string} message - Gösterilecek mesaj.
+ * @returns {Promise<boolean>} - Kullanıcı "Evet" derse true, "Hayır" derse false döner.
+ */
+function showConfirmation(title, message) {
+    return new Promise((resolve) => {
+        const confirmModal = document.getElementById('confirmation-modal');
+        const buttonContainer = document.getElementById('confirm-buttons');
+
+        document.getElementById('confirm-title').textContent = title;
+        document.getElementById('confirm-text').textContent = message;
+        
+        // Butonları temizle ve yeniden oluştur
+        buttonContainer.innerHTML = `
+            <button id="confirm-no-btn" class="secondary">Hayır</button>
+            <button id="confirm-yes-btn">Evet</button>
+        `;
+
+        confirmModal.classList.remove('hidden');
+
+        const yesBtn = document.getElementById('confirm-yes-btn');
+        const noBtn = document.getElementById('confirm-no-btn');
+
+        yesBtn.onclick = () => {
+            confirmModal.classList.add('hidden');
+            resolve(true); // Promise'i true ile sonuçlandır
+        };
+        noBtn.onclick = () => {
+            confirmModal.classList.add('hidden');
+            resolve(false); // Promise'i false ile sonuçlandır
+        };
+    });
+}
+
+
+
+
     function getRankName(level) { return RANKS[level] || `Seviye ${level}`; }
     function createStatBarHTML(label, value, max = 20) { const percentage = (value / max) * 100; return `<div title="${label}: ${value}" style="font-size: 0.8em; margin-top:5px; text-align: left;">${label}<div class="stat-bar"><div class="stat-bar-fill" style="width: ${percentage}%;"></div></div></div>`; }
     function showNotification(message, type = 'info') { const feed = document.getElementById('notification-feed'); if (!feed) return; const notification = document.createElement('div'); notification.className = `notification-item ${type}`; notification.textContent = message; feed.insertBefore(notification, feed.firstChild); setTimeout(() => { notification.remove(); }, 5000); }
@@ -279,19 +335,45 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderUpgradeShop(){if(!upgradeShopEl)return;upgradeShopEl.innerHTML='';for(const upgradeId in UPGRADES){const upgrade=UPGRADES[upgradeId];const cardEl=document.createElement('div');cardEl.className='card';cardEl.innerHTML=`<h4>${upgrade.name}</h4><p style="flex-grow:1">${upgrade.description}</p><p>Fiyat: ${upgrade.cost.toLocaleString()} Cash</p>`;const buyBtn=document.createElement('button');const isOwned=gameState.unlockedUpgrades.includes(upgradeId);if(isOwned){buyBtn.textContent='Satın Alındı';buyBtn.disabled=true}else{buyBtn.textContent='Satın Al';buyBtn.disabled=gameState.cash<upgrade.cost;buyBtn.onclick=()=>buyUpgrade(upgradeId)}cardEl.appendChild(buyBtn);upgradeShopEl.appendChild(cardEl)}}
 
     // --- OYUNCU AKSİYONLARI ---
-    function upgradeBase(){const currentLevel=gameState.baseLevel;if(currentLevel>=BASE_UPGRADES.length)return;const nextUpgrade=BASE_UPGRADES[currentLevel];if(gameState.cash>=nextUpgrade.cost){gameState.cash-=nextUpgrade.cost;gameState.baseLevel++;for(let i=0;i<nextUpgrade.slotsGained;i++){gameState.slots.push({characterId:null,level:1,xp:0,currentHp:100,isRecovering:false,onMission:false,mapId:null,weaponId:'k1',bulletsInMagazine:WEAPONS['k1'].stats.magazine,isReloading:false,autoDeployEnabled:false,autoDeployMapId:'map1'})}showNotification(`${nextUpgrade.name} seviyesine yükseltildi!`, 'milestone');renderAllUI()}else{alert("Yeterli paran yok!")}}
-    function dismissMerc(slotIndex) {
-    const slot = gameState.slots[slotIndex];
-    if (!slot.characterId) return; // Zaten boşsa bir şey yapma
+    async function upgradeBase() {
+    const currentLevel = gameState.baseLevel;
+    if (currentLevel >= BASE_UPGRADES.length) return;
 
+    const nextUpgrade = BASE_UPGRADES[currentLevel];
+    if (gameState.cash >= nextUpgrade.cost) {
+
+        const confirmed = await showConfirmation("Üs Yükselt", `${nextUpgrade.name} seviyesine yükseltmek için ${nextUpgrade.cost.toLocaleString()} Cash harcanacak. Onaylıyor musunuz?`);
+
+        if (confirmed) {
+            gameState.cash -= nextUpgrade.cost;
+            gameState.baseLevel++;
+            for (let i = 0; i < nextUpgrade.slotsGained; i++) {
+                gameState.slots.push({ characterId: null, level: 1, xp: 0, currentHp: 100, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: WEAPONS['k1'].stats.magazine, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' });
+            }
+            showNotification(`Üs, ${nextUpgrade.name} seviyesine yükseltildi!`, 'milestone');
+            renderAllUI();
+        }
+    } else {
+        showAlert("Yetersiz Bakiye", "Üssünü yükseltmek için yeterli paran yok!");
+    }
+}
+
+    async function dismissMerc(slotIndex) {
+    const slot = gameState.slots[slotIndex];
+    if (!slot.characterId) return; // Slot zaten boşsa hiçbir şey yapma
+
+    // Görevdeki karakterin kovulmasını engelle
     if (slot.onMission) {
-        alert("Karakter görevdeyken kovulamaz! Önce üsse geri çağırmalısınız.");
+        showAlert("Uyarı", "Karakter görevdeyken kovulamaz! Önce üsse geri çağırmalısınız.");
         return;
     }
 
-    if (confirm(`Bu karakteri kovmak istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
-        
-        // DÜZELTME: Slotu silmek yerine, içeriğini boşaltıyoruz.
+    // Yeni özel onay penceremizi kullan
+    const confirmed = await showConfirmation("Askeri Kov", `Bu karakteri kovmak istediğinizden emin misiniz? Bu işlem geri alınamaz.`);
+    
+    if (confirmed) {
+        // HATA BURADAYDI: splice, slotu tamamen siliyordu.
+        // DOĞRUSU: Slotu silmek yerine, içeriğini boşaltıp varsayılan haline getiriyoruz.
         gameState.slots[slotIndex] = {
             characterId: null,
             level: 1,
@@ -308,16 +390,90 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         showNotification(`Bir asker kovuldu.`, 'warning');
-        renderAllUI(); // Arayüzü güncelle
+        renderAllUI(); // Arayüzü tüm değişiklikleri yansıtacak şekilde güncelle
     }
 }
-    function buyCharacter(charId) { const character = CHARACTERS[charId]; const currentSlots = gameState.slots.filter(s => s.characterId !== null).length; const maxSlots = gameState.slots.length; if(currentSlots >= maxSlots){alert("Tüm slotların dolu! Yeni slot için üssünü yükselt.");return;} const emptySlotIndex = gameState.slots.findIndex(slot => slot.characterId === null); if (emptySlotIndex !== -1 && gameState.cash >= character.cost) { gameState.cash -= character.cost; const maxHp = character.levels[0].stats.maxHp; gameState.slots[emptySlotIndex] = { characterId: charId, level: 1, xp: 0, currentHp: maxHp, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: WEAPONS['k1'].stats.magazine, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' }; showNotification(`${character.name} ekibe katıldı!`, 'success'); renderAllUI(); } else { alert("Boş slot bulunamadı, bu bir hata olabilir."); } }
-    function buyWeapon(weaponId) { const weapon = WEAPONS[weaponId]; if (!gameState.unlockedWeapons.includes(weaponId) && gameState.cash >= weapon.cost) { gameState.cash -= weapon.cost; gameState.unlockedWeapons.push(weaponId); showNotification(`${weapon.name} silahı envantere eklendi!`, 'success'); renderAllUI(); } }
-    function unlockMap(mapId) { const map = MAPS[mapId]; if (!gameState.unlockedMaps.includes(mapId) && gameState.cash >= map.unlockCost) { gameState.cash -= map.unlockCost; gameState.unlockedMaps.push(mapId); showNotification(`Yeni görev bölgesi açıldı: ${map.name}`, 'success'); renderAllUI(); } }
+    async function buyCharacter(charId) {
+    const character = CHARACTERS[charId];
+    const currentSlots = gameState.slots.filter(s => s.characterId !== null).length;
+    const maxSlots = gameState.slots.length;
+    
+    if (currentSlots >= maxSlots) {
+        showAlert("Slot Yok", "Tüm slotların dolu! Yeni slot için üssünü yükselt.");
+        return;
+    }
+
+    const emptySlotIndex = gameState.slots.findIndex(slot => slot.characterId === null);
+    if (emptySlotIndex !== -1 && gameState.cash >= character.cost) {
+        
+        const confirmed = await showConfirmation("Karakter Satın Al", `${character.name} adlı karakteri ${character.cost.toLocaleString()} Cash karşılığında işe almak istediğinize emin misiniz?`);
+        
+        if (confirmed) {
+            gameState.cash -= character.cost;
+            const maxHp = character.levels[0].stats.maxHp;
+            gameState.slots[emptySlotIndex] = { characterId: charId, level: 1, xp: 0, currentHp: maxHp, isRecovering: false, onMission: false, mapId: null, weaponId: 'k1', bulletsInMagazine: WEAPONS['k1'].stats.magazine, isReloading: false, autoDeployEnabled: false, autoDeployMapId: 'map1' };
+            showNotification(`${character.name} ekibe katıldı!`, 'success');
+            renderAllUI();
+        }
+    } else {
+        showAlert("Yetersiz Bakiye", "Bu karakteri almak için yeterli paran yok!");
+    }
+}
+    async function buyWeapon(weaponId) {
+    const weapon = WEAPONS[weaponId];
+    if (!gameState.unlockedWeapons.includes(weaponId) && gameState.cash >= weapon.cost) {
+
+        const confirmed = await showConfirmation("Silah Satın Al", `${weapon.name} silahını ${weapon.cost.toLocaleString()} Cash karşılığında satın almak istediğinize emin misiniz?`);
+
+        if (confirmed) {
+            gameState.cash -= weapon.cost;
+            gameState.unlockedWeapons.push(weaponId);
+            showNotification(`${weapon.name} silahı envantere eklendi!`, 'success');
+            renderAllUI();
+        }
+    }
+}
+    async function unlockMap(mapId) {
+    const map = MAPS[mapId];
+    if (!gameState.unlockedMaps.includes(mapId) && gameState.cash >= map.unlockCost) {
+        
+        const confirmed = await showConfirmation("Bölge Kilidi Aç", `${map.name} bölgesinin kilidini ${map.unlockCost.toLocaleString()} Cash karşılığında açmak istediğinize emin misiniz?`);
+
+        if (confirmed) {
+            gameState.cash -= map.unlockCost;
+            gameState.unlockedMaps.push(mapId);
+            showNotification(`Yeni görev bölgesi açıldı: ${map.name}`, 'success');
+            renderAllUI();
+        }
+    }
+}
     function recallMerc(slotIndex) { gameState.slots[slotIndex].onMission = false; gameState.slots[slotIndex].mapId = null; updateDynamicElements(); }
     function sendMercToMap(slotIndex, mapId) { gameState.slots[slotIndex].onMission = true; gameState.slots[slotIndex].mapId = mapId; closeDeployModal(); updateDynamicElements(); }
     function equipWeapon(slotIndex, weaponId) { const slot = gameState.slots[slotIndex]; const weapon = WEAPONS[weaponId]; slot.weaponId = weaponId; slot.bulletsInMagazine = weapon.stats.magazine; slot.isReloading = false; closeEquipModal(); updateDynamicElements(); }
-    function buyUpgrade(upgradeId) { if (gameState.unlockedUpgrades.includes(upgradeId)) return; const upgrade = UPGRADES[upgradeId]; if (gameState.cash >= upgrade.cost) { gameState.cash -= upgrade.cost; gameState.unlockedUpgrades.push(upgradeId); showNotification(`${upgrade.name} yeteneği açıldı!`, 'milestone'); switch (upgrade.type) { case 'HEAL_BOOST': gameState.healingSpeedMultiplier = upgrade.value; break; case 'UNLOCK_AUTODEPLOY': gameState.autoDeployUnlocked = true; break; } renderAllUI(); } }
+    async function buyUpgrade(upgradeId) {
+    if (gameState.unlockedUpgrades.includes(upgradeId)) return;
+    const upgrade = UPGRADES[upgradeId];
+    if (gameState.cash >= upgrade.cost) {
+
+        const confirmed = await showConfirmation("Yetenek Satın Al", `${upgrade.name} yeteneğini ${upgrade.cost.toLocaleString()} Cash karşılığında açmak istediğinize emin misiniz?`);
+
+        if (confirmed) {
+            gameState.cash -= upgrade.cost;
+            gameState.unlockedUpgrades.push(upgradeId);
+            showNotification(`${upgrade.name} yeteneği açıldı!`, 'milestone');
+            switch (upgrade.type) {
+                case 'HEAL_BOOST':
+                    gameState.healingSpeedMultiplier = upgrade.value;
+                    break;
+                case 'UNLOCK_AUTODEPLOY':
+                    gameState.autoDeployUnlocked = true;
+                    break;
+            }
+            renderAllUI();
+        }
+    }
+}
+
 
     // --- OYUN DÖNGÜSÜ ---
     function gameTick() {
