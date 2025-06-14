@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const CHARACTERS = {
         'char1': { 
             name: 'Acid Pol', 
-            cost: 100, 
+            cost: 1000, 
             levels: [
                 { stats: { damage: 1, maxHp: 100, defense: 5 }, image: { avatar: 'assets/char1_lvl1_avatar.png', full: 'assets/char1_lvl1_full.png' }, xpToNext: 1000 },
                 { stats: { damage: 2, maxHp: 120, defense: 8 }, image: { avatar: 'assets/char1_lvl2_avatar.png', full: 'assets/char1_lvl2_full.png' }, xpToNext: 5000 },
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'char2': { 
             name: 'Tarantula', 
-            cost: 500, 
+            cost: 5000, 
             levels: [
                 { stats: { damage: 3, maxHp: 80, defense: 3 }, image: { avatar: 'assets/char2_lvl1_avatar.png', full: 'assets/char2_lvl1_full.png' }, xpToNext: 25000 },
                 { stats: { damage: 5, maxHp: 100, defense: 5 }, image: { avatar: 'assets/char2_lvl2_avatar.png', full: 'assets/char2_lvl2_full.png' }, xpToNext: 100000 },
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'char3': { 
             name: 'Viper Red', 
-            cost: 1800, 
+            cost: 18000, 
             levels: [
                 { stats: { damage: 6, maxHp: 120, defense: 4 }, image: { avatar: 'assets/char3_lvl1_avatar.png', full: 'assets/char3_lvl1_full.png' }, xpToNext: 30000 },
                 { stats: { damage: 10, maxHp: 126, defense: 7 }, image: { avatar: 'assets/char3_lvl2_avatar.png', full: 'assets/char3_lvl2_full.png' }, xpToNext: 100000 },
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'char4': { 
             name: 'Hide', 
-            cost: 2900, 
+            cost: 29000, 
             levels: [
                 { stats: { damage: 8, maxHp: 120, defense: 5 }, image: { avatar: 'assets/char4_lvl1_avatar.png', full: 'assets/char4_lvl1_full.png' }, xpToNext: 35000 },
                 { stats: { damage: 16, maxHp: 126, defense: 8 }, image: { avatar: 'assets/char4_lvl2_avatar.png', full: 'assets/char4_lvl2_full.png' }, xpToNext: 190000 },
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         'char5': { 
             name: 'Chou', 
-            cost: 3500, 
+            cost: 35000, 
             levels: [
                 { stats: { damage: 10, maxHp: 120, defense: 6 }, image: { avatar: 'assets/char5_lvl1_avatar.png', full: 'assets/char5_lvl1_full.png' }, xpToNext: 40000 },
                 { stats: { damage: 20, maxHp: 132, defense: 10 }, image: { avatar: 'assets/char5_lvl2_avatar.png', full: 'assets/char5_lvl2_full.png' }, xpToNext: 200000 },
@@ -110,7 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
      // --- OYUN DURUMU (STATE) ---
     let gameState = {
-        cash: 1000, baseLevel: 1,
+        playerName: null,
+        cash: 3000, baseLevel: 1,
         unlockedMaps: ['map1'], unlockedWeapons: ['k1'], unlockedUpgrades: [], 
         healingSpeedMultiplier: 1, autoDeployUnlocked: false,
         slots: [
@@ -145,6 +146,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadGame() { try { const savedData = localStorage.getItem('noktaAtisiMangasiSave'); if (savedData === null || savedData === 'undefined') return; const loadedState = JSON.parse(savedData); Object.assign(gameState, loadedState); console.log("Kayıtlı oyun başarıyla yüklendi!"); } catch(e) { console.error("HATA: Kayıtlı veri yüklenemedi, muhtemelen bozuk.", e); } }
     
     // --- YARDIMCI FONKSİYONLAR ---
+    /**
+ * Oyuncu adı ayarlandıktan sonra oyunu başlatır.
+ * @param {string} nickname - Oyuncunun girdiği isim.
+ */
+function startGame(nickname) {
+    // 1. Oyuncu adını ve arayüzü güncelle
+    gameState.playerName = nickname;
+    document.getElementById('player-nickname-display').textContent = nickname;
+
+    // 2. Başlangıç ekranını gizle
+    document.getElementById('welcome-modal').classList.add('hidden');
+
+    // 3. Oyunun ana döngülerini ve kaydı başlat
+    renderAllUI();
+    setInterval(gameTick, 1000);
+    setInterval(saveGame, 3000);
+}
+
     function getRankName(level) { return RANKS[level] || `Seviye ${level}`; }
     function createStatBarHTML(label, value, max = 20) { const percentage = (value / max) * 100; return `<div title="${label}: ${value}" style="font-size: 0.8em; margin-top:5px; text-align: left;">${label}<div class="stat-bar"><div class="stat-bar-fill" style="width: ${percentage}%;"></div></div></div>`; }
     function showNotification(message, type = 'info') { const feed = document.getElementById('notification-feed'); if (!feed) return; const notification = document.createElement('div'); notification.className = `notification-item ${type}`; notification.textContent = message; feed.insertBefore(notification, feed.firstChild); setTimeout(() => { notification.remove(); }, 5000); }
@@ -368,13 +387,29 @@ function resetGameData(askConfirmation = true) {
         window.location.reload();
     }
 }
+const startGameBtn = document.getElementById('start-game-btn');
+const nicknameInput = document.getElementById('nickname-input');
+
+if (startGameBtn) {
+    startGameBtn.addEventListener('click', () => {
+        const nickname = nicknameInput.value.trim();
+        if (nickname.length > 0) {
+            startGame(nickname);
+        } else {
+            alert("Lütfen geçerli bir oyuncu adı girin.");
+        }
+    });
+}
     
     // --- OYUNU BAŞLATMA ---
     function initializeGame() {
-        loadGame();
-        renderAllUI();
-        setInterval(gameTick, 1000);
-        setInterval(saveGame, 3000);
+    loadGame(); // Kayıtlı veriyi yükle
+
+    if (gameState.playerName) {
+        // Eğer oyuncunun zaten bir adı varsa, oyunu direkt başlat
+        startGame(gameState.playerName);
     }
+    // Eğer adı yoksa, hiçbir şey yapma. Başlangıç ekranı görünür kalacak.
+}
     initializeGame();
 });
