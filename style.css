@@ -184,7 +184,7 @@ button {
 }
 
 button:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: scale(1.0);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
 }
 
@@ -618,4 +618,28 @@ footer p {
     font-size: 1.5em;
     font-weight: bold;
     color: var(--success-color);
+}
+
+
+/* --- ÖZEL MODAL STİLLERİ --- */
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--accent-color);
+}
+.modal-button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end; /* Butonları sağa yaslar */
+    gap: 10px;
+}
+.modal-button-container button {
+    margin-top: 0;
+}
+/* Hayır veya İptal butonu için ikincil stil */
+button.secondary {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+}
+button.secondary:hover {
+    background: #576574;
 }
