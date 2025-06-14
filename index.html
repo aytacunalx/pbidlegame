@@ -20,9 +20,16 @@
         <main class="main-content">
             <section class="game-section">
                 <h2>Paralı Asker Slotları</h2>
-                <div id="mercenary-slots" class="card-container"></div>
-                <button id="unlock-slot-btn">Yeni Slot Aç</button>
+                <div id="mercenary-slots" class="card-container">
+
+                    </div>
+                
             </section>
+            <section class="game-section">
+                    <h2>Ana Üs</h2>
+                    <div id="base-info-container">
+                        </div>
+                </section>
 
             <section class="game-section">
                 <h2>Görev Haritaları</h2>
@@ -37,6 +44,11 @@
             <section class="game-section">
                 <h2>Silah Dükkanı</h2>
                 <div id="weapon-shop" class="card-container"></div>
+            </section>
+            
+            <section class="game-section">
+                <h2>Ürün Dükkanı</h2>
+                <div id="upgrade-shop" class="card-container"></div>
             </section>
         </main>
     </div>
@@ -58,9 +70,13 @@
     </div>
 
      <footer>
-        <p>Created by GM_Tageslicht</p>
+        <p>Created by GM_Tageslicht <span id="reset-game-link">Oyunu Sıfırla</span></p>
+        
     </footer>
 
     <script src="game.js"></script>
+
+    <div id="notification-feed"></div>
+
 </body>
 </html>
